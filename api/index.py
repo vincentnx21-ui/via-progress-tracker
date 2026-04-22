@@ -8,6 +8,10 @@ from firebase_admin import credentials, db
 app = Flask(__name__, template_folder='../templates')
 
 # ---------------- FIREBASE ----------------
+import os, json
+import firebase_admin
+from firebase_admin import credentials, db
+
 def connect_to_firebase():
     if firebase_admin._apps:
         return True
@@ -16,13 +20,12 @@ def connect_to_firebase():
         raw = os.environ.get("FIREBASE_SERVICE_ACCOUNT")
 
         if not raw:
-            print("❌ ENV VARIABLE NOT FOUND")
-            raise Exception("Missing FIREBASE_SERVICE_ACCOUNT")
-
-        print("✅ ENV FOUND")
+            print("❌ Missing FIREBASE_SERVICE_ACCOUNT")
+            return False
 
         info = json.loads(raw)
 
+        # Fix private key formatting
         info["private_key"] = info["private_key"].replace('\\n', '\n')
 
         cred = credentials.Certificate(FIREBASE_SERVICE_ACCOUNT)
@@ -35,8 +38,8 @@ def connect_to_firebase():
         return True
 
     except Exception as e:
-        print("🔥 INIT ERROR:", e)
-        raise e
+        print("🔥 Firebase init error:", e)
+        return False
         
 connect_to_firebase()
 
