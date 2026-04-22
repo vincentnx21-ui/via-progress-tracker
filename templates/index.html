@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>VIA Portal 2026</title>
+</head>
+<body class="bg-[#0f172a] text-slate-200 p-8">
+    <div class="max-w-6xl mx-auto">
+        <h1 class="text-4xl font-bold text-sky-400 mb-8">VIA Class Portal 2026</h1>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-[#1e293b] p-6 rounded-xl border border-white/5">
+                <p class="text-slate-400">Total Hours Tracked</p>
+                <h2 class="text-3xl font-bold">{{ total_hours }}h</h2>
+            </div>
+        </div>
+
+        <div class="bg-[#1e293b] p-6 rounded-xl mb-8">
+            <h3 class="text-xl mb-4 font-semibold">Submit New Activity</h3>
+            <form action="/add_log" method="POST" class="flex gap-4">
+                <select name="user" class="bg-slate-800 p-2 rounded border border-slate-700">
+                    {% for member in members %}
+                        <option value="{{ member.name }}">{{ member.name }}</option>
+                    {% endfor %}
+                </select>
+                <input type="text" name="task" placeholder="What did you do?" class="bg-slate-800 p-2 rounded flex-1">
+                <input type="number" name="minutes" placeholder="Mins" class="bg-slate-800 p-2 rounded w-24">
+                <button type="submit" class="bg-sky-500 px-6 py-2 rounded font-bold hover:bg-sky-400">Log Hours</button>
+            </form>
+        </div>
+
+        <div class="bg-[#1e293b] p-6 rounded-xl">
+            <h3 class="text-xl mb-4 font-semibold">Recent Activity</h3>
+            <div class="space-y-2">
+                {% for log in logs %}
+                    <div class="bg-slate-800/50 p-3 rounded text-sm">
+                        <span class="text-sky-400 font-mono">[{{ log.date }}]</span> 
+                        <strong>{{ log.user }}</strong>: {{ log.task }} ({{ log.minutes }}m)
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>
