@@ -6,41 +6,46 @@ from firebase_admin import credentials, db
 
 app = Flask(__name__, template_folder='../templates')
 
-# --- INITIALIZE FIREBASE GLOBALLY ---
-service_account_info = os.environ.get("FIREBASE_SERVICE_ACCOUNT")
-
-if service_account_info:
-    try:
-        # Load the JSON string into a dictionary
-        info = json.loads(service_account_info)
-        
-        # Fix the private key formatting
-        if "private_key" in info:
-            info["private_key"] = info["private_key"].replace('\\n', '\n')
+# --- GLOBAL INITIALIZATION ---
+def connect_to_firebase():
+    if not firebase_admin._apps:
+        service_account_info = os.environ.get("FIREBASE_SERVICE_ACCOUNT")
+        if not service_account_info:
+            return False
             
-        cred = credentials.Certificate(info)
-        
-        # Check if already initialized to prevent "Duplicate App" errors
-        if not firebase_admin._apps:
+        try:
+            info = json.loads(service_account_info)
+            if "private_key" in info:
+                info["private_key"] = info["private_key"].replace('\\n', '\n')
+            
+            cred = credentials.Certificate(info)
             firebase_admin.initialize_app(cred, {
                 'databaseURL': "https://via-report-default-rtdb.asia-southeast1.firebasedatabase.app/"
             })
-    except Exception as e:
-        print(f"Firebase Init Error: {e}")
-# -------------------------------------
+            return True
+        except Exception as e:
+            print(f"Init Error: {e}")
+            return False
+    return True
+
+# Try to connect immediately when the script loads
+connect_to_firebase()
 
 @app.route('/')
 def index():
     try:
-        # Verify if app was initialized
-        if not firebase_admin._apps:
-            return "Error: Firebase was not initialized. Check your Environment Variables."
-            
+        # Fallback: Try to connect again if the global init failed
+        if not connect_to_firebase():
+            return "Setup Error: Could not connect to Firebase. Check your Vercel Environment Variables."
+
+        # Fetch data from Realtime Database
+        # Note: Ensure 'via_master_record' matches your actual database node name
         data = db.reference("via_master_record").get() or {}
         members = data.get("members", [])
+        
         return render_template('index.html', members=members)
     except Exception as e:
-        # This will catch and show the specific error on your website
+        # This will show you exactly why the database call failed
         return f"Database Error: {str(e)}"
 
 # Required for Vercel
