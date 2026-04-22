@@ -5,7 +5,7 @@ from flask import Flask, request, jsonify, render_template, redirect
 import firebase_admin
 from firebase_admin import credentials, db
 
-app = Flask(__name__, template_folder='../templates')
+app = Flask(__name__, template_folder='templates')
 
 # ---------------- FIREBASE ----------------
 import os, json
