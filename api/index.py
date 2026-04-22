@@ -19,7 +19,7 @@ def connect_to_firebase():
 
         cred = credentials.Certificate(info)
         firebase_admin.initialize_app(cred, {
-            'databaseURL': "https://via-report-default-rtdb.asia-southeast1.firebasedatabase.app/"
+            'databaseURL': "https://via-progress-tracker-memory-default-rtdb.asia-southeast1.firebasedatabase.app/"
         })
 
 connect_to_firebase()
