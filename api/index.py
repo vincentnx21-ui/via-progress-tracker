@@ -25,7 +25,7 @@ def connect_to_firebase():
 
         info["private_key"] = info["private_key"].replace('\\n', '\n')
 
-        cred = credentials.Certificate(info)
+        cred = credentials.Certificate(FIREBASE_SERVICE_ACCOUNT)
 
         firebase_admin.initialize_app(cred, {
             'databaseURL': "https://via-progress-tracker-memory-default-rtdb.asia-southeast1.firebasedatabase.app/"
