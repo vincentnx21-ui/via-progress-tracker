@@ -9,19 +9,35 @@ app = Flask(__name__, template_folder='../templates')
 
 # ---------------- FIREBASE ----------------
 def connect_to_firebase():
-    if not firebase_admin._apps:
-        service_account_info = os.environ.get("FIREBASE_SERVICE_ACCOUNT")
-        if not service_account_info:
-            raise Exception("Missing Firebase env")
+    if firebase_admin._apps:
+        return True
 
-        info = json.loads(service_account_info)
+    try:
+        raw = os.environ.get("FIREBASE_SERVICE_ACCOUNT")
+
+        if not raw:
+            print("❌ ENV VARIABLE NOT FOUND")
+            raise Exception("Missing FIREBASE_SERVICE_ACCOUNT")
+
+        print("✅ ENV FOUND")
+
+        info = json.loads(raw)
+
         info["private_key"] = info["private_key"].replace('\\n', '\n')
 
         cred = credentials.Certificate(info)
+
         firebase_admin.initialize_app(cred, {
-            'databaseURL': "https://via-progress-tracker-memory-default-rtdb.asia-southeast1.firebasedatabase.app/"
+            'databaseURL': "https://via-report-default-rtdb.asia-southeast1.firebasedatabase.app/"
         })
 
+        print("✅ Firebase initialized")
+        return True
+
+    except Exception as e:
+        print("🔥 INIT ERROR:", e)
+        raise e
+        
 connect_to_firebase()
 
 # ---------------- LOAD DATA ----------------
