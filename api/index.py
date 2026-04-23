@@ -69,6 +69,32 @@ def load_data():
 def save_data(data):
     db.reference("via_master_record").set(data)
 
+@app.route('/')
+def home():
+    data = load_data()
+
+    total_minutes = sum(l.get("minutes", 0) for l in data["logs"])
+    total_hours = total_minutes // 60
+
+    return render_template(
+        "dashboard.html",
+        members=data["members"],
+        logs=data["logs"],
+        total_hours=total_hours
+    )
+
+
+@app.route('/attendance')
+def attendance():
+    data = load_data()
+    return render_template("attendance.html", members=data["members"])
+
+
+@app.route('/admin')
+def admin():
+    data = load_data()
+    return render_template("admin.html", members=data["members"])
+
 
 # ---------------- ROUTES ----------------
 
