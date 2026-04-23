@@ -5,7 +5,10 @@ from flask import Flask, request, jsonify, render_template, redirect
 import firebase_admin
 from firebase_admin import credentials, db
 
-app = Flask(__name__, template_folder='templates')
+app = Flask(
+    __name__,
+    template_folder=os.path.join(os.path.dirname(__file__), '../templates')
+)
 
 # ---------------- FIREBASE ----------------
 def connect_to_firebase():
@@ -72,20 +75,9 @@ def save_data(data):
 @app.route('/')
 def home():
     try:
-        data = load_data()
-
-        total_minutes = sum(l.get("minutes", 0) for l in data["logs"])
-        total_hours = total_minutes // 60
-
-        return render_template(
-            "index.html",
-            members=data["members"],
-            logs=data["logs"],
-            total_hours=total_hours
-        )
-
+        return render_template("index.html")
     except Exception as e:
-        return f"🔥 ERROR: {str(e)}"
+        return f"🔥 TEMPLATE ERROR: {str(e)}"
 
 
 # ---------------- ADD LOG ----------------
