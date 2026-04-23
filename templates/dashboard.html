@@ -15,34 +15,51 @@
     <a href="/admin">Admin</a>
 </div>
 
+<!-- HEADER -->
 <h1 class="text-2xl mb-4">Total Hours: {{ total_hours }}</h1>
 
+<!-- QUICK STATS -->
+<div class="mb-6">
+    <p>Total Logs: {{ logs|length }}</p>
+    <p>Total Members: {{ members|length }}</p>
+</div>
+
 <!-- CHART -->
-<canvas id="chart" class="bg-white rounded p-4"></canvas>
+<div class="bg-white rounded p-4 max-w-xl">
+    <canvas id="chart"></canvas>
+</div>
 
 <script>
-const data = {
-    labels: {{ contributions.keys()|list }},
-    datasets: [{
-        label: 'Minutes Contributed',
-        data: {{ contributions.values()|list }},
-    }]
-};
+const labels = {{ contributions.keys() | list | tojson }};
+const values = {{ contributions.values() | list | tojson }};
 
-new Chart(document.getElementById('chart'), {
-    type: 'bar',
-    data: data
-});
+if (labels.length > 0) {
+    new Chart(document.getElementById('chart'), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Minutes Contributed',
+                data: values,
+            }]
+        }
+    });
+}
 </script>
 
 <!-- LOGS -->
-<h2 class="mt-6 mb-2">Activity Logs</h2>
+<h2 class="mt-6 mb-2 text-lg">Activity Logs</h2>
 
-{% for log in logs %}
-<div class="bg-slate-800 p-3 mb-2 rounded">
-    <b>{{ log.user }}</b> - {{ log.task }} ({{ log.minutes }} min)
-</div>
-{% endfor %}
+{% if logs %}
+    {% for log in logs %}
+    <div class="bg-slate-800 p-3 mb-2 rounded">
+        <b>{{ log.user }}</b> - {{ log.task }} ({{ log.minutes }} min)
+        <div class="text-xs text-slate-400">{{ log.date }}</div>
+    </div>
+    {% endfor %}
+{% else %}
+    <p class="text-slate-400">No activity yet.</p>
+{% endif %}
 
 </body>
 </html>
