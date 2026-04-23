@@ -3,19 +3,41 @@
 <head>
     <title>Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body class="bg-slate-900 text-white p-6">
 
-<!-- NAVBAR -->
+<!-- NAV -->
 <div class="flex gap-6 mb-6">
-    <a href="/" class="text-sky-400">Dashboard</a>
+    <a href="/dashboard" class="text-sky-400">Dashboard</a>
     <a href="/attendance">Attendance</a>
     <a href="/admin">Admin</a>
 </div>
 
 <h1 class="text-2xl mb-4">Total Hours: {{ total_hours }}</h1>
 
+<!-- CHART -->
+<canvas id="chart" class="bg-white rounded p-4"></canvas>
+
+<script>
+const data = {
+    labels: {{ contributions.keys()|list }},
+    datasets: [{
+        label: 'Minutes Contributed',
+        data: {{ contributions.values()|list }},
+    }]
+};
+
+new Chart(document.getElementById('chart'), {
+    type: 'bar',
+    data: data
+});
+</script>
+
 <!-- LOGS -->
+<h2 class="mt-6 mb-2">Activity Logs</h2>
+
 {% for log in logs %}
 <div class="bg-slate-800 p-3 mb-2 rounded">
     <b>{{ log.user }}</b> - {{ log.task }} ({{ log.minutes }} min)
