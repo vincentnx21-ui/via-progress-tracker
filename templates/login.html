@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js"></script>
+</head>
+
+<body class="bg-slate-900 text-white flex items-center justify-center h-screen">
+
+<div class="bg-slate-800 p-8 rounded-lg w-80">
+
+    <h2 class="text-xl mb-4">Login</h2>
+
+    <input id="email" placeholder="Email" class="w-full p-2 mb-2 text-black">
+    <input id="password" type="password" placeholder="Password" class="w-full p-2 mb-4 text-black">
+
+    <button onclick="login()" class="w-full bg-sky-500 p-2 mb-2">Login</button>
+    <button onclick="signup()" class="w-full bg-green-500 p-2">Sign Up</button>
+
+</div>
+
+<script>
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+
+function login() {
+    auth.signInWithEmailAndPassword(
+        document.getElementById("email").value,
+        document.getElementById("password").value
+    ).then(() => {
+        window.location.href = "/dashboard";
+    }).catch(e => alert(e.message));
+}
+
+function signup() {
+    auth.createUserWithEmailAndPassword(
+        document.getElementById("email").value,
+        document.getElementById("password").value
+    ).catch(e => alert(e.message));
+}
+</script>
+
+</body>
+</html>
