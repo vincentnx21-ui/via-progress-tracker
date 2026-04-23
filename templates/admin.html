@@ -7,17 +7,34 @@
 <body class="bg-slate-900 text-white p-6">
 
 <div class="flex gap-6 mb-6">
-    <a href="/">Dashboard</a>
+    <a href="/dashboard">Dashboard</a>
     <a href="/attendance">Attendance</a>
     <a href="/admin" class="text-sky-400">Admin</a>
 </div>
 
-<h1 class="text-2xl mb-4">Add Member</h1>
+<h1 class="text-2xl mb-4">Manage Members</h1>
 
-<form action="/add_member" method="POST">
-    <input name="name" placeholder="Name" class="p-2 text-black">
+<form action="/add_member" method="POST" class="mb-4">
+    <input 
+        name="name" 
+        placeholder="Name" 
+        required 
+        class="p-2 text-black rounded"
+    >
     <button type="submit" class="bg-sky-500 px-4 py-2">Add</button>
 </form>
+
+<h2 class="mb-2">Current Members</h2>
+
+{% if members %}
+    {% for m in members %}
+    <div class="bg-slate-800 p-2 mb-1 rounded">
+        {{ m.name }}
+    </div>
+    {% endfor %}
+{% else %}
+    <p class="text-slate-400">No members yet.</p>
+{% endif %}
 
 </body>
 </html>
