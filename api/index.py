@@ -28,7 +28,6 @@ def connect_to_firebase():
         if "private_key" in info:
             info["private_key"] = info["private_key"].replace('\\n', '\n')
 
-        # ✅ FIXED (use info, NOT env name)
         cred = credentials.Certificate(info)
 
         firebase_admin.initialize_app(cred, {
@@ -43,13 +42,13 @@ def connect_to_firebase():
         return False
 
 
-# 🔥 IMPORTANT for Vercel (runs every request)
+# Run before every request (important for Vercel)
 @app.before_request
 def init():
     connect_to_firebase()
 
 
-# ---------------- LOAD DATA ----------------
+# ---------------- DATA ----------------
 def load_data():
     try:
         data = db.reference("via_master_record").get() or {}
@@ -69,41 +68,55 @@ def load_data():
 def save_data(data):
     db.reference("via_master_record").set(data)
 
+
+# ---------------- ROUTES ----------------
+
+# Redirect root → dashboard
 @app.route('/')
 def home():
+    return redirect("/dashboard")
+
+
+# Dashboard
+@app.route('/dashboard')
+def dashboard():
     data = load_data()
 
-    total_minutes = sum(l.get("minutes", 0) for l in data["logs"])
+    logs = data["logs"]
+    members = data["members"]
+
+    total_minutes = sum(l.get("minutes", 0) for l in logs)
     total_hours = total_minutes // 60
 
     return render_template(
         "dashboard.html",
-        members=data["members"],
-        logs=data["logs"],
+        members=members,
+        logs=logs,
         total_hours=total_hours
     )
 
 
+# Attendance page
 @app.route('/attendance')
 def attendance():
     data = load_data()
-    return render_template("attendance.html", members=data["members"])
+
+    return render_template(
+        "attendance.html",
+        members=data["members"],
+        contributions=data.get("contributions", {})
+    )
 
 
+# Admin page
 @app.route('/admin')
 def admin():
     data = load_data()
-    return render_template("admin.html", members=data["members"])
 
-
-# ---------------- ROUTES ----------------
-
-@app.route('/')
-def home():
-    try:
-        return render_template("index.html")
-    except Exception as e:
-        return f"🔥 TEMPLATE ERROR: {str(e)}"
+    return render_template(
+        "admin.html",
+        members=data["members"]
+    )
 
 
 # ---------------- ADD LOG ----------------
@@ -125,12 +138,12 @@ def add_log():
 
         data["logs"].append(new_log)
 
-        key = f"{user}"
-        data["contributions"][key] = data["contributions"].get(key, 0) + minutes
+        # Update contributions
+        data["contributions"][user] = data["contributions"].get(user, 0) + minutes
 
         save_data(data)
 
-        return redirect("/")
+        return redirect("/dashboard")
 
     except Exception as e:
         return f"🔥 Log Error: {str(e)}"
@@ -144,12 +157,12 @@ def add_member():
 
         name = request.form.get("name")
 
-        data["members"].append({
-            "name": name
-        })
+        if name:
+            data["members"].append({"name": name})
 
         save_data(data)
-        return redirect("/")
+
+        return redirect("/admin")
 
     except Exception as e:
         return f"🔥 Member Error: {str(e)}"
