@@ -1,98 +1,21 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>Dashboard</title>
-</head>
 <body>
 
-<h2>Dashboard</h2>
-<p>Total Hours: <span id="hours">0</span></p>
-
-<input id="activity" placeholder="Activity"><br><br>
-<input id="minutes" type="number" placeholder="Minutes"><br><br>
-
-<button onclick="submitActivity()">Submit</button>
+<h2>Admin Page</h2>
 <button onclick="logout()">Logout</button>
 
-<div id="log"></div>
-
 <script type="module">
+import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getDatabase, ref, get, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyAUXHMgyVM1kkidzz5FyEfQLfwG7aGTf1Y",
-  authDomain: "via-progress-tracker-memory.firebaseapp.com",
-  databaseURL: "https://via-progress-tracker-memory-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "via-progress-tracker-memory",
-  storageBucket: "via-progress-tracker-memory.appspot.com",
-  messagingSenderId: "1022592681906",
-  appId: "1:1022592681906:web:2bc2d21155c151770346ab"
-};
-
-const app = initializeApp(firebaseConfig);
 const auth = getAuth();
-const db = getDatabase();
-
-let userData = null;
-
-// Protect page
-onAuthStateChanged(auth, async (user) => {
-  if (!user) {
-    window.location.href = "index.html";
-    return;
-  }
-
-  const snap = await get(ref(db, "users/" + user.uid));
-  userData = snap.val();
-
-  loadActivities(user.uid);
-});
-
-async function submitActivity() {
-  const user = auth.currentUser;
-
-  await push(ref(db, "activities"), {
-    user: user.uid,
-    name: userData.name,
-    activity: activity.value,
-    minutes: parseInt(minutes.value)
-  });
-
-  loadActivities(user.uid);
-}
-
-async function loadActivities(uid) {
-  const snap = await get(ref(db, "activities"));
-  let total = 0;
-  log.innerHTML = "";
-
-  if (snap.exists()) {
-    const data = snap.val();
-
-    for (let id in data) {
-      const item = data[id];
-
-      if (item.user === uid) {
-        log.innerHTML += `<p>${item.activity} (${item.minutes} mins)</p>`;
-        total += item.minutes;
-      }
-    }
-  }
-
-  hours.textContent = (total / 60).toFixed(1);
-}
 
 function logout() {
   signOut(auth);
   window.location.href = "index.html";
 }
 
-window.submitActivity = submitActivity;
 window.logout = logout;
-
 </script>
 
 </body>
