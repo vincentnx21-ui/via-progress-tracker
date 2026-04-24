@@ -1,59 +1,121 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>VIA Portal 2026</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+  <title>VIA Login</title>
 </head>
-<body class="bg-[#0f172a] text-slate-200 font-sans p-4 md:p-8">
-    <div class="max-w-5xl mx-auto">
-        <div class="flex justify-between items-center mb-10">
-            <h1 class="text-3xl font-bold text-sky-400">🚀 VIA Portal 2026</h1>
-            <div class="bg-slate-800 px-4 py-2 rounded-lg border border-white/5">
-                <span class="text-slate-400 text-sm">Class Progress:</span>
-                <span class="text-xl font-mono ml-2">{{ total_hours }}h</span>
-            </div>
-        </div>
+<body>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div class="lg:col-span-1 bg-[#1e293b] p-6 rounded-2xl border border-white/5 shadow-xl h-fit">
-                <h2 class="text-lg font-semibold mb-4">Submit Activity</h2>
-                <form action="/log" method="POST" class="space-y-4">
-                    <div>
-                        <label class="text-xs text-slate-400 uppercase">Member</label>
-                        <select name="user" class="w-full bg-slate-900 border border-slate-700 p-3 rounded-lg mt-1">
-                            {% for m in members %}<option value="{{ m.name }}">{{ m.name }}</option>{% endfor %}
-                        </select>
-                    </div>
-                    <div>
-                        <label class="text-xs text-slate-400 uppercase">What did you do?</label>
-                        <input type="text" name="task" required class="w-full bg-slate-900 border border-slate-700 p-3 rounded-lg mt-1">
-                    </div>
-                    <div>
-                        <label class="text-xs text-slate-400 uppercase">Minutes</label>
-                        <input type="number" name="minutes" value="30" step="5" class="w-full bg-slate-900 border border-slate-700 p-3 rounded-lg mt-1">
-                    </div>
-                    <button type="submit" class="w-full bg-sky-500 hover:bg-sky-400 text-white font-bold py-3 rounded-lg transition-all">Submit Entry</button>
-                </form>
-            </div>
+<h2>VIA Portal</h2>
 
-            <div class="lg:col-span-2">
-                <h2 class="text-lg font-semibold mb-4 text-slate-400 uppercase tracking-widest text-sm">Recent Activity Log</h2>
-                <div class="space-y-3">
-                    {% for log in logs %}
-                    <div class="bg-[#1e293b]/50 p-4 rounded-xl border border-white/5 flex justify-between items-center">
-                        <div>
-                            <p class="font-bold text-sky-300">{{ log.user }}</p>
-                            <p class="text-sm text-slate-300">{{ log.task }}</p>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-xs text-slate-500">{{ log.date }}</p>
-                            <p class="font-mono text-white">{{ log.minutes }}m</p>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-    </div>
+<h3>Sign Up (First Time Users)</h3>
+<input type="email" id="email" placeholder="Email"><br><br>
+<input type="password" id="password" placeholder="Create Password"><br><br>
+<button onclick="signup()">Sign Up</button>
+
+<hr>
+
+<h3>Login</h3>
+<input type="email" id="loginEmail" placeholder="Email"><br><br>
+<input type="password" id="loginPassword" placeholder="Password"><br><br>
+<button onclick="login()">Login</button>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAUXHMgyVM1kkidzz5FyEfQLfwG7aGTf1Y",
+  authDomain: "via-progress-tracker-memory.firebaseapp.com",
+  databaseURL: "https://via-progress-tracker-memory-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "via-progress-tracker-memory",
+  storageBucket: "via-progress-tracker-memory.firebasestorage.app",
+  messagingSenderId: "1022592681906",
+  appId: "1:1022592681906:web:2bc2d21155c151770346ab"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth();
+const db = getDatabase();
+
+
+// ================= SIGN UP =================
+async function signup() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  const cleanEmail = email.replace(/\./g, "_");
+
+  // 🔥 Check if email is allowed
+  const snap = await get(ref(db, "rolesByEmail/" + cleanEmail));
+
+  if (!snap.exists()) {
+    alert("❌ Your email is not registered!");
+    return;
+  }
+
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    const data = snap.val();
+
+    await set(ref(db, "users/" + user.uid), {
+      name: data.name,
+      email: user.email,
+      roles: data.roles
+    });
+
+    alert("✅ Account created! Now login.");
+    
+  } catch (e) {
+    alert(e.message);
+  }
+}
+
+
+// ================= LOGIN =================
+async function login() {
+  const email = document.getElementById("loginEmail").value;
+  const password = document.getElementById("loginPassword").value;
+
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    const cleanEmail = email.replace(/\./g, "_");
+    const snap = await get(ref(db, "rolesByEmail/" + cleanEmail));
+
+    if (snap.exists()) {
+      const data = snap.val();
+
+      await set(ref(db, "users/" + user.uid), {
+        name: data.name,
+        email: user.email,
+        roles: data.roles
+      });
+
+      // 🔥 Redirect based on role
+      if (data.roles.includes("teacher")) {
+        window.location.href = "admin.html";
+      } else {
+        window.location.href = "dashboard.html";
+      }
+
+    } else {
+      alert("No role assigned!");
+    }
+
+  } catch (e) {
+    alert("Login failed: " + e.message);
+  }
+}
+
+window.signup = signup;
+window.login = login;
+
+</script>
+
 </body>
 </html>
