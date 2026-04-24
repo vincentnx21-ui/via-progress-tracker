@@ -1,78 +1,86 @@
 <!DOCTYPE html>
 <html>
+<head>
+  <title>Dashboard</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      background: #f5f7fa;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: auto;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      background: #4facfe;
+      color: white;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    button:hover {
+      background: #3a8be0;
+    }
+
+    .log-item {
+      padding: 8px;
+      border-bottom: 1px solid #eee;
+    }
+  </style>
+</head>
+
 <body>
 
-<h2>Dashboard</h2>
-<p>Total Hours: <span id="hours">0</span></p>
+<div class="container">
 
-<input id="activity" placeholder="Activity"><br><br>
-<input id="minutes" type="number"><br><br>
+  <div class="card">
+    <h2>Dashboard</h2>
+    <p>Total Hours: <span id="hours">0</span></p>
+  </div>
 
-<button onclick="submitActivity()">Submit</button>
-<button onclick="logout()">Logout</button>
+  <div class="card">
+    <h3>Submit Activity</h3>
+    <input id="activity" placeholder="What did you do?">
+    <input id="minutes" type="number" placeholder="Minutes">
+    <button onclick="submitActivity()">Submit</button>
+  </div>
 
-<div id="log"></div>
+  <div class="card">
+    <h3>Your Activities</h3>
+    <div id="log"></div>
+  </div>
 
+  <button onclick="logout()">Logout</button>
+
+</div>
+
+<!-- KEEP YOUR SCRIPT SAME -->
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getDatabase, ref, get, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-const firebaseConfig = { /* SAME CONFIG */ };
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth();
-const db = getDatabase();
-
-let userData;
-
-onAuthStateChanged(auth, async (user) => {
-  if (!user) window.location.href = "index.html";
-
-  const snap = await get(ref(db, "users/" + user.uid));
-  userData = snap.val();
-
-  load(user.uid);
-});
-
-async function submitActivity() {
-  const user = auth.currentUser;
-
-  await push(ref(db, "activities"), {
-    user: user.uid,
-    name: userData.name,
-    activity: activity.value,
-    minutes: parseInt(minutes.value)
-  });
-
-  load(user.uid);
-}
-
-async function load(uid) {
-  const snap = await get(ref(db, "activities"));
-  let total = 0;
-  log.innerHTML = "";
-
-  if (snap.exists()) {
-    for (let id in snap.val()) {
-      let item = snap.val()[id];
-      if (item.user === uid) {
-        log.innerHTML += `<p>${item.activity} (${item.minutes})</p>`;
-        total += item.minutes;
-      }
-    }
-  }
-
-  hours.textContent = (total / 60).toFixed(1);
-}
-
-function logout() {
-  signOut(auth);
-  window.location.href = "index.html";
-}
-
-window.submitActivity = submitActivity;
-window.logout = logout;
+/* your firebase code stays the same */
 </script>
 
 </body>
