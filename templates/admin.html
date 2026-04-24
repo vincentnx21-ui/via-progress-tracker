@@ -1,40 +1,99 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Admin</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+  <title>Dashboard</title>
 </head>
-<body class="bg-slate-900 text-white p-6">
+<body>
 
-<div class="flex gap-6 mb-6">
-    <a href="/dashboard">Dashboard</a>
-    <a href="/attendance">Attendance</a>
-    <a href="/admin" class="text-sky-400">Admin</a>
-</div>
+<h2>Dashboard</h2>
+<p>Total Hours: <span id="hours">0</span></p>
 
-<h1 class="text-2xl mb-4">Manage Members</h1>
+<input id="activity" placeholder="Activity"><br><br>
+<input id="minutes" type="number" placeholder="Minutes"><br><br>
 
-<form action="/add_member" method="POST" class="mb-4">
-    <input 
-        name="name" 
-        placeholder="Name" 
-        required 
-        class="p-2 text-black rounded"
-    >
-    <button type="submit" class="bg-sky-500 px-4 py-2">Add</button>
-</form>
+<button onclick="submitActivity()">Submit</button>
+<button onclick="logout()">Logout</button>
 
-<h2 class="mb-2">Current Members</h2>
+<div id="log"></div>
 
-{% if members %}
-    {% for m in members %}
-    <div class="bg-slate-800 p-2 mb-1 rounded">
-        {{ m.name }}
-    </div>
-    {% endfor %}
-{% else %}
-    <p class="text-slate-400">No members yet.</p>
-{% endif %}
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getDatabase, ref, get, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAUXHMgyVM1kkidzz5FyEfQLfwG7aGTf1Y",
+  authDomain: "via-progress-tracker-memory.firebaseapp.com",
+  databaseURL: "https://via-progress-tracker-memory-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "via-progress-tracker-memory",
+  storageBucket: "via-progress-tracker-memory.appspot.com",
+  messagingSenderId: "1022592681906",
+  appId: "1:1022592681906:web:2bc2d21155c151770346ab"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth();
+const db = getDatabase();
+
+let userData = null;
+
+// Protect page
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    window.location.href = "index.html";
+    return;
+  }
+
+  const snap = await get(ref(db, "users/" + user.uid));
+  userData = snap.val();
+
+  loadActivities(user.uid);
+});
+
+async function submitActivity() {
+  const user = auth.currentUser;
+
+  await push(ref(db, "activities"), {
+    user: user.uid,
+    name: userData.name,
+    activity: activity.value,
+    minutes: parseInt(minutes.value)
+  });
+
+  loadActivities(user.uid);
+}
+
+async function loadActivities(uid) {
+  const snap = await get(ref(db, "activities"));
+  let total = 0;
+  log.innerHTML = "";
+
+  if (snap.exists()) {
+    const data = snap.val();
+
+    for (let id in data) {
+      const item = data[id];
+
+      if (item.user === uid) {
+        log.innerHTML += `<p>${item.activity} (${item.minutes} mins)</p>`;
+        total += item.minutes;
+      }
+    }
+  }
+
+  hours.textContent = (total / 60).toFixed(1);
+}
+
+function logout() {
+  signOut(auth);
+  window.location.href = "index.html";
+}
+
+window.submitActivity = submitActivity;
+window.logout = logout;
+
+</script>
 
 </body>
 </html>
