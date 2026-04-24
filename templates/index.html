@@ -2,87 +2,82 @@
 <html>
 <head>
   <title>VIA Portal</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #4facfe, #00f2fe);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .card {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      width: 300px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      text-align: center;
+    }
+
+    h2 {
+      margin-bottom: 10px;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      background: #4facfe;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background: #3a8be0;
+    }
+
+    hr {
+      margin: 20px 0;
+    }
+  </style>
 </head>
+
 <body>
 
-<h2>VIA Portal</h2>
+<div class="card">
+  <h2>VIA Portal</h2>
 
-<h3>Sign Up</h3>
-<input id="email" placeholder="Email"><br><br>
-<input id="password" type="password" placeholder="Create Password"><br><br>
-<button onclick="signup()">Sign Up</button>
+  <h4>Sign Up</h4>
+  <input id="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Create Password">
+  <button onclick="signup()">Sign Up</button>
 
-<hr>
+  <hr>
 
-<h3>Login</h3>
-<input id="loginEmail" placeholder="Email"><br><br>
-<input id="loginPassword" type="password" placeholder="Password"><br><br>
-<button onclick="login()">Login</button>
+  <h4>Login</h4>
+  <input id="loginEmail" placeholder="Email">
+  <input id="loginPassword" type="password" placeholder="Password">
+  <button onclick="login()">Login</button>
+</div>
 
+<!-- KEEP YOUR SCRIPT SAME -->
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyAUXHMgyVM1kkidzz5FyEfQLfwG7aGTf1Y",
-  authDomain: "via-progress-tracker-memory.firebaseapp.com",
-  databaseURL: "https://via-progress-tracker-memory-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "via-progress-tracker-memory",
-  storageBucket: "via-progress-tracker-memory.appspot.com",
-  messagingSenderId: "1022592681906",
-  appId: "1:1022592681906:web:2bc2d21155c151770346ab"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth();
-const db = getDatabase();
-
-// SIGNUP
-async function signup() {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-
-  const cleanEmail = email.replace(/\./g, "_");
-  const snap = await get(ref(db, "rolesByEmail/" + cleanEmail));
-
-  if (!snap.exists()) {
-    alert("Email not allowed!");
-    return;
-  }
-
-  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-  const data = snap.val();
-
-  await set(ref(db, "users/" + userCredential.user.uid), {
-    name: data.name,
-    email: email,
-    roles: data.roles
-  });
-
-  alert("Account created!");
-}
-
-// LOGIN
-async function login() {
-  const email = document.getElementById("loginEmail").value;
-  const password = document.getElementById("loginPassword").value;
-
-  const userCredential = await signInWithEmailAndPassword(auth, email, password);
-
-  const cleanEmail = email.replace(/\./g, "_");
-  const snap = await get(ref(db, "rolesByEmail/" + cleanEmail));
-  const data = snap.val();
-
-  if (data.roles.includes("teacher")) {
-    window.location.href = "admin.html";
-  } else {
-    window.location.href = "dashboard.html";
-  }
-}
-
-window.signup = signup;
-window.login = login;
+/* your firebase code stays the same */
 </script>
 
 </body>
